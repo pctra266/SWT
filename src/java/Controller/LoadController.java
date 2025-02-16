@@ -92,7 +92,7 @@ public class LoadController extends HttpServlet {
             BusStopDAO daoBus = new BusStopDAO();
             ArrayList<BusStop> listBusStop = daoBus.getAllBusStop();
             request.setAttribute("listBS", listBusStop);
-             request.getRequestDispatcher("HomePage.jsp").forward(request, response);
+            request.getRequestDispatcher("HomePage.jsp").forward(request, response);
 
         } else {
             // need login to access
@@ -110,7 +110,7 @@ public class LoadController extends HttpServlet {
                     request.setAttribute("listStopHasOrder", listStopHasOrder);
                     request.setAttribute("updateRoute", updateRoute);
                     request.getRequestDispatcher("UpdateRoute.jsp").forward(request, response);
-                    
+
                     break;
                 case "loadCreateRoute":
                     ArrayList<Stop> listStopRoute = daoStop.getAllStop();
@@ -169,16 +169,8 @@ public class LoadController extends HttpServlet {
                     }
                     // if has error send mess
                     String errorUpdate = request.getParameter("error");
-                    if (errorUpdate != null) {
-                        switch (errorUpdate) {
-                            case "1":
-                                request.setAttribute("mess", "user name already exist, try another name");
-                                break;
-                            default:
-                                break;
-
-                        }
-
+                    if ("1".equals(errorUpdate)) {
+                        request.setAttribute("mess", "user name already exists, try another name");
                     }
 
                     String userId = request.getParameter("UserID");
@@ -196,17 +188,10 @@ public class LoadController extends HttpServlet {
                     }
                     // if has error send mess
                     String errorCreate = request.getParameter("error");
-                    if (errorCreate != null) {
-                        switch (errorCreate) {
-                            case "1":
-                                request.setAttribute("mess", "user name already exist, try another name");
-                                break;
-                            default:
-                                break;
-
-                        }
-
+                    if ("1".equals(errorCreate)) {
+                        request.setAttribute("mess", "user name already exists, try another name");
                     }
+
                     request.setAttribute("listRole", daoRole.getAllRole());
                     request.getRequestDispatcher("CreateUser.jsp").forward(request, response);
                     break;
@@ -247,6 +232,7 @@ public class LoadController extends HttpServlet {
         request.getRequestDispatcher("HomePage.jsp").forward(request, response);
 
     }
+
     /**
      * Returns a short description of the servlet.
      *
