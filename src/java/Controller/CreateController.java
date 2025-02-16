@@ -81,6 +81,7 @@ public class CreateController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         StopDAO stopDao = new StopDAO();
+        String defaultResponse = "load?action=loadRole00";
         switch (action) {
             case "createRoute":
                 String RouteName = request.getParameter("RouteName");
@@ -113,7 +114,7 @@ public class CreateController extends HttpServlet {
                 System.out.println(newRoute);
                 System.out.println("===EndnewRoute===");
                 if(isValidRoute(newRoute, listRoute)){
-                    response.sendRedirect("load?action=loadRole00");
+                    response.sendRedirect(defaultResponse);
                     break;
                 }else{
                     routeDao.deleteRouteByID(String.valueOf(newRoute.getRouteID()));
@@ -127,7 +128,7 @@ public class CreateController extends HttpServlet {
                 ArrayList<Stop> listS = stopDao.getAllStop();
                 if(isValidStop(StopName, listS)){// if valid creaate
                 stopDao.createStop(StopName);
-                response.sendRedirect("load?action=loadRole00");
+                response.sendRedirect(defaultResponse);
                 break;
             }else{// not valid not create and load to createStop
                     response.sendRedirect("load?action=loadCreateStop");
@@ -139,7 +140,7 @@ public class CreateController extends HttpServlet {
                 String routeID = request.getParameter("routeID");
                 BusDAO busDao = new BusDAO();
                 busDao.createBus(busNumber, routeID);
-                response.sendRedirect("load?action=loadRole00");
+                response.sendRedirect(defaultResponse   );
                 break;
             case "createUser":
                 UserDAO userDao = new UserDAO();
