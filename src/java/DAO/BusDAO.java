@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
@@ -33,7 +34,8 @@ public class BusDAO {
             while (rs.next()) {
                 list.add(new Bus(rs.getInt("BusID"), rs.getString("BusNumber"), rs.getString("RouteName")));
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            e.printStackTrace();
 
         }
 
@@ -53,7 +55,8 @@ public class BusDAO {
             ps.setString(2, BusID);
             ps.executeUpdate();
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            e.printStackTrace();
 
         }
     }
@@ -74,7 +77,8 @@ public class BusDAO {
             ps.setString(2, routeID);
             ps.executeUpdate();
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            e.printStackTrace();
 
         }
     }
@@ -98,7 +102,8 @@ public class BusDAO {
                     ps.setString(4, busID);
                     ps.executeUpdate();
 
-                } catch (Exception e) {
+                } catch (SQLException e) {
+                    e.printStackTrace();
 
                 }
             } else {
@@ -116,7 +121,8 @@ public class BusDAO {
                     ps.setString(3, busID);
                     ps.executeUpdate();
 
-                } catch (Exception e) {
+                } catch (SQLException e) {
+                    e.printStackTrace();
 
                 }
             }
@@ -137,7 +143,7 @@ public class BusDAO {
                     ps.setString(2, busID);
                     ps.executeUpdate();
 
-                } catch (Exception e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             } else {
@@ -150,7 +156,7 @@ public class BusDAO {
                     ps.setString(2, busID);
                     ps.executeUpdate();
 
-                } catch (Exception e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -172,7 +178,8 @@ public class BusDAO {
             while (rs.next()) {
                 return new Bus(rs.getInt("BusID"), rs.getString("BusNumber"), rs.getString("RouteName"));
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            e.printStackTrace();
 
         }
 
