@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package Controller;
+package controller;
 
 import DAO.BusDAO;
 import DAO.BusStopDAO;
@@ -103,10 +103,9 @@ public class LoadController extends HttpServlet {
 
             switch (action) {
                 case "loadUpdateRoute":
-                    String RouteID = request.getParameter("RouteID");
-                    Route updateRoute = daoRoute.getRouteByID(RouteID);
-                    ArrayList<Stop> listStopRouteUpdate = daoStop.getAllStop();
-                    ArrayList<ListOrderOfRoute> listStopHasOrder = daoRoute.getListStopBusHasOrderByRouteID(RouteID);
+                    String routeId = request.getParameter("RouteID");
+                    Route updateRoute = daoRoute.getRouteByID(routeId);
+                    ArrayList<ListOrderOfRoute> listStopHasOrder = daoRoute.getListStopBusHasOrderByRouteID(routeId);
 
                     request.setAttribute("listStopHasOrder", listStopHasOrder);
                     request.setAttribute("updateRoute", updateRoute);
@@ -119,8 +118,8 @@ public class LoadController extends HttpServlet {
                     request.getRequestDispatcher("CreateRoute.jsp").forward(request, response);
                     break;
                 case "loadUpdateStop":
-                    String StopID = request.getParameter("StopID");
-                    Stop updateStop = daoStop.getStopByID(StopID);
+                    String stopId = request.getParameter("StopID");
+                    Stop updateStop = daoStop.getStopByID(stopId);
                     request.setAttribute("updateStop", updateStop);
                     request.getRequestDispatcher("UpdateStop.jsp").forward(request, response);
                     break;
@@ -157,8 +156,8 @@ public class LoadController extends HttpServlet {
                 case "loadUpdateBus":
                     ArrayList<Route> listRouteUpdate = daoRoute.getAllRoute();
                     request.setAttribute("listRoute", listRouteUpdate);
-                    String BusID = request.getParameter("BusID");
-                    Bus updateBus = busDao.getBusByID(BusID);
+                    String busId = request.getParameter("BusID");
+                    Bus updateBus = busDao.getBusByID(busId);
                     request.setAttribute("updateBus", updateBus);
                     request.getRequestDispatcher("UpdateBus.jsp").forward(request, response);
                     break;
@@ -182,8 +181,8 @@ public class LoadController extends HttpServlet {
 
                     }
 
-                    String UserID = request.getParameter("UserID");
-                    User userUpdate = userDao.getUserByID(UserID);
+                    String userId = request.getParameter("UserID");
+                    User userUpdate = userDao.getUserByID(userId);
                     request.setAttribute("userUpdate", userUpdate);
                     request.setAttribute("listRole", daoRole.getAllRole());
                     request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
