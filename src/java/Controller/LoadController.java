@@ -229,12 +229,12 @@ public class LoadController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String StopID1 = request.getParameter("StopID1");
-        String StopID2 = request.getParameter("StopID2");
+        String stopID1 = request.getParameter("StopID1");
+        String stopID2 = request.getParameter("StopID2");
 
         // get all Route by StopID
         RouteDAO daoRoute = new RouteDAO();
-        ArrayList<Route> listRoute = daoRoute.getRouteByStopID(StopID1, StopID2);
+        ArrayList<Route> listRoute = daoRoute.getRouteByStopID(stopID1, stopID2);
         request.setAttribute("listR", listRoute);
 
         // get all BusStop
@@ -242,8 +242,8 @@ public class LoadController extends HttpServlet {
         ArrayList<BusStop> listBusStop = daoBus.getAllBusStop();
         request.setAttribute("listBS", listBusStop);
 
-        request.setAttribute("StopID1", StopID1);
-        request.setAttribute("StopID2", StopID2);
+        request.setAttribute("StopID1", stopID1);
+        request.setAttribute("StopID2", stopID2);
 
         request.getRequestDispatcher("HomePage.jsp").forward(request, response);
 
