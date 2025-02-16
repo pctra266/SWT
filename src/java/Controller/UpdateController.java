@@ -4,6 +4,8 @@
  */
 package Controller;
 
+import java.util.logging.Logger;
+
 import DAO.BusDAO;
 import DAO.RouteDAO;
 import DAO.StopDAO;
@@ -27,6 +29,8 @@ import java.util.ArrayList;
  */
 @WebServlet(name = "UpdateController", urlPatterns = {"/update"})
 public class UpdateController extends HttpServlet {
+
+    private static final Logger logger = Logger.getLogger(UpdateController.class.getName());
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -77,15 +81,16 @@ public class UpdateController extends HttpServlet {
         }
         return true;
     }
-    private boolean isValidRoute(Route checkRoute, ArrayList<Route> listRoute){
+
+    private boolean isValidRoute(Route checkRoute, ArrayList<Route> listRoute) {
         for (Route route : listRoute) {
-            if(checkRoute.getEndPoint().equalsIgnoreCase(route.getEndPoint())
-               && checkRoute.getEndTime().equalsIgnoreCase(route.getEndTime())
-               && checkRoute.getFrequency().equalsIgnoreCase(route.getFrequency())
-               && checkRoute.getIntermediateStation().equalsIgnoreCase(route.getIntermediateStation())
-               && checkRoute.getRouteName().equalsIgnoreCase(route.getRouteName())
-               && checkRoute.getStartPoint().equalsIgnoreCase(route.getStartPoint())
-               && checkRoute.getStartTime().equalsIgnoreCase(route.getStartTime())     ){
+            if (checkRoute.getEndPoint().equalsIgnoreCase(route.getEndPoint())
+                    && checkRoute.getEndTime().equalsIgnoreCase(route.getEndTime())
+                    && checkRoute.getFrequency().equalsIgnoreCase(route.getFrequency())
+                    && checkRoute.getIntermediateStation().equalsIgnoreCase(route.getIntermediateStation())
+                    && checkRoute.getRouteName().equalsIgnoreCase(route.getRouteName())
+                    && checkRoute.getStartPoint().equalsIgnoreCase(route.getStartPoint())
+                    && checkRoute.getStartTime().equalsIgnoreCase(route.getStartTime())) {
                 return false;
             }
         }
@@ -106,7 +111,6 @@ public class UpdateController extends HttpServlet {
             throws ServletException, IOException {
         doPost(request, response);
     }
-     
 
     /**
      * Handles the HTTP <code>POST</code> method.
@@ -141,44 +145,45 @@ public class UpdateController extends HttpServlet {
                 RouteDAO routeDao = new RouteDAO();
                 Route oldRoute = routeDao.getRouteByID(RouteIDUpdate);
                 routeDao.updateRoute(RouteIDUpdate, RouteName, StartPoint, EndPoint, StartTime, EndTime, Frequency, listStopID, listOrder);
-                
+
                 // check valid update bus
-                Route currentRoute =routeDao.getRouteByID(RouteIDUpdate);
+                Route currentRoute = routeDao.getRouteByID(RouteIDUpdate);
                 ArrayList<Route> listRoute = routeDao.getAllRoute();
                 //take index
                 int index = -1;
                 for (int i = 0; i < listRoute.size(); i++) {
-                    if(listRoute.get(i).getRouteID() == Integer.parseInt(RouteIDUpdate)){
+                    if (listRoute.get(i).getRouteID() == Integer.parseInt(RouteIDUpdate)) {
                         index = i;
                     }
-                    
+
                 }
                 // remove that index
                 listRoute.remove(index);
-                
-                if(isValidRoute(currentRoute, listRoute)){
+
+                if (isValidRoute(currentRoute, listRoute)) {
                     response.sendRedirect("load?action=loadRole00");
-                break;
-                }else{// roll back
-                    System.out.println("Current route is: ");
-                    System.out.println(currentRoute);
-                    System.out.println("list compare is: ");
+                    break;
+                } else {// roll back
+                    logger.info("Current route is: " + currentRoute);
+                    logger.info("List compare is: ");
+
                     for (Route route : listRoute) {
-                        System.out.println(route);
+                        logger.info(route.toString());
                     }
-                    System.out.println("Go to roll back route update bro !!");
-                    routeDao.updateRoute(RouteIDUpdate,oldRoute.getRouteName(), 
-                            oldRoute.getStartPoint(), 
-                            oldRoute.getEndPoint(), 
-                            oldRoute.getStartTime(), 
-                            oldRoute.getEndTime(), 
-                            oldRoute.getFrequency(), 
+
+                    logger.warning("Go to roll back route update bro !!");
+
+                    routeDao.updateRoute(RouteIDUpdate, oldRoute.getRouteName(),
+                            oldRoute.getStartPoint(),
+                            oldRoute.getEndPoint(),
+                            oldRoute.getStartTime(),
+                            oldRoute.getEndTime(),
+                            oldRoute.getFrequency(),
                             listStopID, listOrder);
-                    response.sendRedirect("load?action=loadUpdateRoute&RouteID="+RouteIDUpdate);
+
+                    response.sendRedirect("load?action=loadUpdateRoute&RouteID=" + RouteIDUpdate);
                     break;
                 }
-                
-                
 
             case "updateStop":
                 String StopID = request.getParameter("StopID");
@@ -190,7 +195,7 @@ public class UpdateController extends HttpServlet {
                     response.sendRedirect("load?action=loadRole00");
                     break;
                 } else {// not valid not create and load to updateStop
-                    response.sendRedirect("load?action=loadUpdateStop&StopID="+StopID);
+                    response.sendRedirect("load?action=loadUpdateStop&StopID=" + StopID);
                     break;
                 }
             case "updateBus":
