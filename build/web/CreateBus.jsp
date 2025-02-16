@@ -31,8 +31,8 @@
                            </div>
                             
                             <div class="input-group">
-                                <label>Select Route Name </label>
-                                    <select name="routeID">
+                                <label for="routeID" >Select Route Name </label>
+                                    <select id="routeID" name="routeID">
                                         <option value="" > no Route </option>
                                         <c:forEach items="${listRoute}" var="o">
                                             <option value="${o.getRouteID()}">${o.getRouteName()}</option>
