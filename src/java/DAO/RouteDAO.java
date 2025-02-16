@@ -130,34 +130,73 @@ public class RouteDAO {
     }
 
     public void createRoute(String RouteName, String StartPoint, String EndPoint, String StartTime,
-            String EndTime, String Frequency, int[] StopID, String[] StopOrder) {
-        String insertRouteQuery = "insert into [Route](RouteName,StartPoint,EndPoint,StartTime,EndTime,Frequency)\n"
-                + "values(?,?,?,?,?,?)";
-        String insertRouteStop = "declare @idroute int\n"
-                + "set @idroute = SCOPE_IDENTITY();\n"
-                + "insert into RouteStop(RouteID,StopID,StopOrder)\n"
-                + "values";
+                        String EndTime, String Frequency, int[] StopID, String[] StopOrder) {
+    String insertRouteQuery = "INSERT INTO [Route](RouteName, StartPoint, EndPoint, StartTime, EndTime, Frequency) VALUES (?, ?, ?, ?, ?, ?)";
+    String insertRouteStopQuery = "INSERT INTO RouteStop(RouteID, StopID, StopOrder) VALUES (?, ?, ?)";
+
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+        conn = new DBContext().connection;
+        conn.setAutoCommit(false); // Start transaction
+
+        // Insert into Route table
+        ps = conn.prepareStatement(insertRouteQuery);
+        ps.setString(1, RouteName);
+        ps.setString(2, StartPoint);
+        ps.setString(3, EndPoint);
+        ps.setString(4, StartTime);
+        ps.setString(5, EndTime);
+        ps.setString(6, Frequency);
+        ps.executeUpdate();
+
+        // Get the generated RouteID
+        rs = ps.getGeneratedKeys();
+        int routeID = -1;
+        if (rs.next()) {
+            routeID = rs.getInt(1);
+        }
+
+        // Check if we got a valid RouteID
+        if (routeID == -1) {
+            throw new Exception("Failed to retrieve RouteID.");
+        }
+
+        // Insert into RouteStop table (Batch Processing)
+        ps = conn.prepareStatement(insertRouteStopQuery);
         for (int i = 0; i < StopID.length; i++) {
             if (!StopOrder[i].isEmpty()) {
-                insertRouteStop += "(@idroute," + StopID[i] + ", " + StopOrder[i] + "),";
+                ps.setInt(1, routeID);
+                ps.setInt(2, StopID[i]);
+                ps.setInt(3, Integer.parseInt(StopOrder[i]));
+                ps.addBatch();
             }
         }
-        insertRouteStop = insertRouteStop.substring(0, insertRouteStop.length() - 1);
-        String finalString = insertRouteQuery + insertRouteStop;
-        try {
-            conn = new DBContext().connection;
-            ps = conn.prepareStatement(finalString);
-            ps.setString(1, RouteName);
-            ps.setString(2, StartPoint);
-            ps.setString(3, EndPoint);
-            ps.setString(4, StartTime);
-            ps.setString(5, EndTime);
-            ps.setString(6, Frequency);
-            ps.executeUpdate();
+        ps.executeBatch(); // Execute batch insert
 
-        } catch (Exception e) {
+        conn.commit(); // Commit transaction
+
+    } catch (Exception e) {
+       if (conn != null) {
+            try {
+                conn.rollback(); // Rollback transaction on error
+            }catch (Exception e1) {
+           }
         }
-    }
+        e.printStackTrace();
+    }finally {
+        try {
+            if (rs != null) rs.close();
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        } catch (Exception closeEx) {
+            closeEx.printStackTrace();
+        }
+    } 
+}
+
 
     public Route getRouteByID(String RouteID) {
         String query = " SELECT \n"
