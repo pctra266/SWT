@@ -71,136 +71,108 @@ public class LoadController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getParameter("action");
-        BusDAO busDao = new BusDAO();
-        UserDAO userDao = new UserDAO();
-        RouteDAO daoRoute = new RouteDAO();
-        StopDAO daoStop = new StopDAO();
-        RoleDAO daoRole = new RoleDAO();
+   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    String action = request.getParameter("action");
+    HttpSession session = request.getSession();
+    User currentUser = (User) session.getAttribute("currentUser");
 
-        HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("currentUser");
-
-        if (action == null) {
-
-            // get all Route
-            ArrayList<Route> listRoute = daoRoute.getAllRoute();
-            request.setAttribute("listR", listRoute);
-            // get all BusStop
-            BusStopDAO daoBus = new BusStopDAO();
-            ArrayList<BusStop> listBusStop = daoBus.getAllBusStop();
-            request.setAttribute("listBS", listBusStop);
-            request.getRequestDispatcher("HomePage.jsp").forward(request, response);
-
-        } else {
-            // need login to access
-            if (currentUser == null) {
-                response.sendRedirect("AccessDenied.jsp");
-                return;
-            }
-
-            switch (action) {
-                case "loadUpdateRoute":
-                    String routeId = request.getParameter("RouteID");
-                    Route updateRoute = daoRoute.getRouteByID(routeId);
-                    ArrayList<ListOrderOfRoute> listStopHasOrder = daoRoute.getListStopBusHasOrderByRouteID(routeId);
-
-                    request.setAttribute("listStopHasOrder", listStopHasOrder);
-                    request.setAttribute("updateRoute", updateRoute);
-                    request.getRequestDispatcher("UpdateRoute.jsp").forward(request, response);
-
-                    break;
-                case "loadCreateRoute":
-                    ArrayList<Stop> listStopRoute = daoStop.getAllStop();
-                    request.setAttribute("listStop", listStopRoute);
-                    request.getRequestDispatcher("CreateRoute.jsp").forward(request, response);
-                    break;
-                case "loadUpdateStop":
-                    String stopId = request.getParameter("StopID");
-                    Stop updateStop = daoStop.getStopByID(stopId);
-                    request.setAttribute("updateStop", updateStop);
-                    request.getRequestDispatcher("UpdateStop.jsp").forward(request, response);
-                    break;
-                case "loadCreateStop":
-                    response.sendRedirect("CreateStop.jsp");
-                    break;
-                case "loadCreateBus":
-                    ArrayList<Route> listRoute = daoRoute.getAllRoute();
-                    request.setAttribute("listRoute", listRoute);
-                    request.getRequestDispatcher("CreateBus.jsp").forward(request, response);
-                    break;
-                case "logout":
-                    session.invalidate();
-                    response.sendRedirect("load");
-                    break;
-                case "loadRole00":
-                    ArrayList<Route> listRouteEdit = daoRoute.getAllRoute();
-                    request.setAttribute("listR", listRouteEdit);
-                    ArrayList<Bus> listBus = busDao.getAllBusDAO();
-                    request.setAttribute("listB", listBus);
-                    ArrayList<Stop> listStop = daoStop.getAllStop();
-                    request.setAttribute("listStop", listStop);
-                    request.getRequestDispatcher("TestRole00.jsp").forward(request, response);
-                    break;
-                case "loadRole01":
-                    if (currentUser.getRoleID() != 1) {
-                        response.sendRedirect("AccessDenied.jsp");
-                        return;
-                    }
-                    ArrayList<User> list = userDao.getAllUser();
-                    request.setAttribute("listUser", list);
-                    request.getRequestDispatcher("TestRole01.jsp").forward(request, response);
-                    break;
-                case "loadUpdateBus":
-                    ArrayList<Route> listRouteUpdate = daoRoute.getAllRoute();
-                    request.setAttribute("listRoute", listRouteUpdate);
-                    String busId = request.getParameter("BusID");
-                    Bus updateBus = busDao.getBusByID(busId);
-                    request.setAttribute("updateBus", updateBus);
-                    request.getRequestDispatcher("UpdateBus.jsp").forward(request, response);
-                    break;
-                case "loadUpdateUser":
-                    //check authority
-                    if (currentUser.getRoleID() != 1) {
-                        response.sendRedirect("AccessDenied.jsp");
-                        return;
-                    }
-                    // if has error send mess
-                    String errorUpdate = request.getParameter("error");
-                    if ("1".equals(errorUpdate)) {
-                        request.setAttribute("mess", "user name already exists, try another name");
-                    }
-
-                    String userId = request.getParameter("UserID");
-                    User userUpdate = userDao.getUserByID(userId);
-                    request.setAttribute("userUpdate", userUpdate);
-                    request.setAttribute("listRole", daoRole.getAllRole());
-                    request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
-                    break;
-
-                case "loadCreateUser":
-                    //check authority   
-                    if (currentUser.getRoleID() != 1) {
-                        response.sendRedirect("AccessDenied.jsp");
-                        return;
-                    }
-                    // if has error send mess
-                    String errorCreate = request.getParameter("error");
-                    if ("1".equals(errorCreate)) {
-                        request.setAttribute("mess", "user name already exists, try another name");
-                    }
-
-                    request.setAttribute("listRole", daoRole.getAllRole());
-                    request.getRequestDispatcher("CreateUser.jsp").forward(request, response);
-                    break;
-                default:
-                    response.sendRedirect("load");
-            }
-        }
-
+    if (action == null) {
+        loadHomePage(request, response);
+        return;
     }
+
+    if (currentUser == null) {
+        response.sendRedirect("AccessDenied.jsp");
+        return;
+    }
+
+    switch (action) {
+        case "loadUpdateRoute" -> loadUpdateRoute(request, response);
+        case "loadCreateRoute" -> loadCreateRoute(request, response);
+        case "loadUpdateBus" -> loadUpdateBus(request, response);
+        case "loadUpdateUser", "loadCreateUser" -> handleUserManagement(request, response, action, currentUser);
+        case "logout" -> {
+            session.invalidate();
+            response.sendRedirect("load");
+            }
+        default -> response.sendRedirect("load");
+    }
+}
+
+/**
+ * Tải trang chủ với danh sách tuyến đường và điểm dừng xe buýt.
+ */
+private void loadHomePage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    RouteDAO daoRoute = new RouteDAO();
+    BusStopDAO daoBus = new BusStopDAO();
+
+    request.setAttribute("listR", daoRoute.getAllRoute());
+    request.setAttribute("listBS", daoBus.getAllBusStop());
+    request.getRequestDispatcher("HomePage.jsp").forward(request, response);
+}
+
+/**
+ * Tải trang cập nhật tuyến đường.
+ */
+private void loadUpdateRoute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    RouteDAO daoRoute = new RouteDAO();
+    StopDAO daoStop = new StopDAO();
+
+    String routeId = request.getParameter("RouteID");
+    request.setAttribute("updateRoute", daoRoute.getRouteByID(routeId));
+    request.setAttribute("listStopHasOrder", daoRoute.getListStopBusHasOrderByRouteID(routeId));
+    request.setAttribute("listStop", daoStop.getAllStop());
+
+    request.getRequestDispatcher("UpdateRoute.jsp").forward(request, response);
+}
+
+/**
+ * Tải trang tạo tuyến đường.
+ */
+private void loadCreateRoute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    StopDAO daoStop = new StopDAO();
+    request.setAttribute("listStop", daoStop.getAllStop());
+    request.getRequestDispatcher("CreateRoute.jsp").forward(request, response);
+}
+
+/**
+ * Tải trang cập nhật thông tin xe buýt.
+ */
+private void loadUpdateBus(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    RouteDAO daoRoute = new RouteDAO();
+    BusDAO busDao = new BusDAO();
+
+    request.setAttribute("listRoute", daoRoute.getAllRoute());
+    request.setAttribute("updateBus", busDao.getBusByID(request.getParameter("BusID")));
+    request.getRequestDispatcher("UpdateBus.jsp").forward(request, response);
+}
+
+/**
+ * Xử lý tải trang cập nhật hoặc tạo người dùng.
+ */
+private void handleUserManagement(HttpServletRequest request, HttpServletResponse response, String action, User currentUser) throws ServletException, IOException {
+    if (currentUser.getRoleID() != 1) {
+        response.sendRedirect("AccessDenied.jsp");
+        return;
+    }
+
+    UserDAO userDao = new UserDAO();
+    RoleDAO daoRole = new RoleDAO();
+
+    String error = request.getParameter("error");
+    if ("1".equals(error)) {
+        request.setAttribute("mess", "User name already exists, try another name");
+    }
+
+    if (action.equals("loadUpdateUser")) {
+        request.setAttribute("userUpdate", userDao.getUserByID(request.getParameter("UserID")));
+        request.setAttribute("listRole", daoRole.getAllRole());
+        request.getRequestDispatcher("UpdateUser.jsp").forward(request, response);
+    } else {
+        request.setAttribute("listRole", daoRole.getAllRole());
+        request.getRequestDispatcher("CreateUser.jsp").forward(request, response);
+    }
+}
 
     /**
      * Handles the HTTP <code>POST</code> method.
